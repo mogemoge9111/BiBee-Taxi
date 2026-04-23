@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/chat"
+    android:paddingTop="24dp"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Создать заказ"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp"/>
+
+        <EditText
+            android:id="@+id/etCity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Город"
+            android:inputType="text"/>
+
+        <EditText
+            android:id="@+id/etFromAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Откуда (адрес)"
+            android:inputType="text"/>
+
+        <EditText
+            android:id="@+id/etToAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Куда (адрес)"
+            android:inputType="text"/>
+
+        <EditText
+            android:id="@+id/etMaxPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Максимальная цена (₽)"
+            android:inputType="number"/>
+
+        <EditText
+            android:id="@+id/etPassengers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Количество пассажиров"
+            android:inputType="number"/>
+
+        <EditText
+            android:id="@+id/etCargo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Описание груза (необязательно)"
+            android:inputType="text"/>
+
+        <Button
+            android:id="@+id/btnSubmitRequest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#FFC107"
+            android:textColor="#000000"
+            android:textStyle="bold"
+            android:text="Отправить запрос"
+            android:layout_marginTop="24dp"/>
+    </LinearLayout>
+</ScrollView>

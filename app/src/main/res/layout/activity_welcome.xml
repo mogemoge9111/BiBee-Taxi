@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@drawable/vxod"
+    android:padding="20dp">
+
+    <Button
+        android:id="@+id/btnPassenger"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Я пассажир"
+        android:backgroundTint="#FFC107"
+        android:textColor="#000000"
+        android:textStyle="bold"
+        android:padding="12dp"
+        android:layout_marginBottom="20dp" />
+
+    <Button
+        android:id="@+id/btnDriver"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Я водитель"
+        android:backgroundTint="#000000"
+        android:textColor="#FFC107"
+        android:textStyle="bold"
+        android:padding="12dp" />
+
+</LinearLayout>
