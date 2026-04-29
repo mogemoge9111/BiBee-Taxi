@@ -1,6 +1,7 @@
 package com.example.bibeetaxi;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -11,8 +12,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,15 +35,19 @@ import java.io.IOException;
 public class ProfileFragment extends Fragment {
 
     private static final int PICK_IMAGE_REQUEST = 1;
+    private static final String PREFS_NAME = "UserPrefs";
+    private static final String KEY_ROLE = "currentRole";
 
     private ImageView ivProfilePhoto;
     private EditText etName, etSurname;
-    private TextView tvRating;
+    private TextView tvRating, tvCurrentRole;
+    private Switch switchRole;
     private Button btnChangePhoto, btnSaveProfile, btnLogout, btnSupport;
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
     private String currentUserId;
+    private SharedPreferences prefs;
 
     @Nullable
     @Override
@@ -51,6 +58,8 @@ public class ProfileFragment extends Fragment {
         etName = view.findViewById(R.id.etName);
         etSurname = view.findViewById(R.id.etSurname);
         tvRating = view.findViewById(R.id.tvRating);
+        tvCurrentRole = view.findViewById(R.id.tvCurrentRole);
+        switchRole = view.findViewById(R.id.switchRole);
         btnChangePhoto = view.findViewById(R.id.btnChangePhoto);
         btnSaveProfile = view.findViewById(R.id.btnSaveProfile);
         btnLogout = view.findViewById(R.id.btnLogout);
@@ -59,6 +68,27 @@ public class ProfileFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
         currentUserId = mAuth.getCurrentUser().getUid();
+        prefs = requireActivity().getSharedPreferences(PREFS_NAME, 0);
+
+        String currentRole = prefs.getString(KEY_ROLE, "passenger");
+        tvCurrentRole.setText("Режим: " + (currentRole.equals("passenger") ? "Пассажир" : "Водитель"));
+        switchRole.setChecked(currentRole.equals("driver"));
+
+        switchRole.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                String newRole = isChecked ? "driver" : "passenger";
+                prefs.edit().putString(KEY_ROLE, newRole).apply();
+                Intent intent;
+                if (isChecked) {
+                    intent = new Intent(getActivity(), MainDriverActivity.class);
+                } else {
+                    intent = new Intent(getActivity(), MainPassengerActivity.class);
+                }
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            }
+        });
 
         loadUserData();
 
@@ -84,7 +114,6 @@ public class ProfileFragment extends Fragment {
             Uri imageUri = data.getData();
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(requireActivity().getContentResolver(), imageUri);
-                // Сжимаем до разумного размера
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 70, baos);
                 byte[] imageBytes = baos.toByteArray();
@@ -156,7 +185,7 @@ public class ProfileFragment extends Fragment {
                 .setMessage("Вы точно хотите выйти?")
                 .setPositiveButton("Да", (dialog, which) -> {
                     FirebaseAuth.getInstance().signOut();
-                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                    Intent intent = new Intent(getActivity(), WelcomeActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                 })

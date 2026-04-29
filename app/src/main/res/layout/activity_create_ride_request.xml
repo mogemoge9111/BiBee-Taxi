@@ -1,74 +1,137 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="16dp"
     android:background="@drawable/chat"
-    android:paddingTop="24dp"
-    android:padding="16dp">
+    android:paddingTop="50dp">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="match_parent"
+        android:padding="16dp"
+        android:paddingTop="50dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Создать заказ"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="24dp"/>
-
-        <EditText
-            android:id="@+id/etCity"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Город"
-            android:inputType="text"/>
+            android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/etFromAddress"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Откуда (адрес)"
-            android:inputType="text"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Создать заказ"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="24dp"/>
 
-        <EditText
-            android:id="@+id/etToAddress"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Куда (адрес)"
-            android:inputType="text"/>
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilCity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Город*"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"/>
+            </com.google.android.material.textfield.TextInputLayout>
 
-        <EditText
-            android:id="@+id/etMaxPrice"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Максимальная цена (₽)"
-            android:inputType="number"/>
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilFrom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Откуда (адрес)*"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"/>
+            </com.google.android.material.textfield.TextInputLayout>
+            <Button android:id="@+id/btnCheckFrom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#000000"
+                android:textColor="#FFC107"
+                android:textStyle="bold"
+                android:text="Проверить адрес"
+                android:layout_gravity="end"/>
 
-        <EditText
-            android:id="@+id/etPassengers"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Количество пассажиров"
-            android:inputType="number"/>
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilTo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Куда (адрес)*"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"/>
+            </com.google.android.material.textfield.TextInputLayout>
+            <Button android:id="@+id/btnCheckTo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#000000"
+                android:textColor="#FFC107"
+                android:textStyle="bold"
+                android:text="Проверить адрес"
+                android:layout_gravity="end"/>
 
-        <EditText
-            android:id="@+id/etCargo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Описание груза (необязательно)"
-            android:inputType="text"/>
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilMaxPrice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Максимальная цена (₽)*"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"/>
+            </com.google.android.material.textfield.TextInputLayout>
 
-        <Button
-            android:id="@+id/btnSubmitRequest"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:backgroundTint="#FFC107"
-            android:textColor="#000000"
-            android:textStyle="bold"
-            android:text="Отправить запрос"
-            android:layout_marginTop="24dp"/>
-    </LinearLayout>
-</ScrollView>
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilPassengers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Количество пассажиров"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilCargo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Описание груза (необязательно)"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/btnSubmitRequest"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#FFC107"
+                android:textColor="#000000"
+                android:textStyle="bold"
+                android:text="Отправить запрос"
+                android:layout_marginTop="24dp"/>
+        </LinearLayout>
+    </ScrollView>
+
+    <ImageButton
+        android:id="@+id/btnClose"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="end|top"
+        android:layout_margin="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_close_black"
+        android:contentDescription="Закрыть" />
+</FrameLayout>

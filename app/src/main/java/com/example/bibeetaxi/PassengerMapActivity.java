@@ -275,7 +275,7 @@ public class PassengerMapActivity extends AppCompatActivity implements Session.S
                         if (loc != null) {
                             Point point = new Point(loc.getLatitude(), loc.getLongitude());
                             PlacemarkMapObject placemark = mapObjects.addPlacemark(point);
-                            placemark.setIcon(ImageProvider.fromResource(this, R.drawable.ic_car));
+                            placemark.setIcon(ImageProvider.fromResource(this, R.drawable.driver_marker));
                             String driverName = doc.getString("name");
                             placemark.setText("🚖 " + (driverName != null ? driverName : "Водитель"));
                             placemark.addTapListener((mapObject, tapPoint) -> {

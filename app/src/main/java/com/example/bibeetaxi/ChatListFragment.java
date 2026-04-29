@@ -82,7 +82,6 @@ public class ChatListFragment extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                // Можно показать Toast, но не обязательно
             }
         });
     }

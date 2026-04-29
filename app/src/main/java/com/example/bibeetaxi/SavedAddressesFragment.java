@@ -46,7 +46,6 @@ public class SavedAddressesFragment extends Fragment {
         });
 
         lvAddresses.setOnItemClickListener((parent, view1, position, id) -> {
-            // Можно реализовать выбор адреса для быстрого построения маршрута
             String selected = addresses.get(position);
             Toast.makeText(getContext(), "Выбран: " + selected, Toast.LENGTH_SHORT).show();
         });

@@ -27,11 +27,11 @@ public class SupportActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_support);
+        findViewById(R.id.btnCloseSupport).setOnClickListener(v -> finish());
 
         etSubject = findViewById(R.id.etSubject);
         etMessage = findViewById(R.id.etMessage);
         btnSend = findViewById(R.id.btnSend);
-        progressBar = findViewById(R.id.progressBar);
 
         db = FirebaseFirestore.getInstance();
         userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
