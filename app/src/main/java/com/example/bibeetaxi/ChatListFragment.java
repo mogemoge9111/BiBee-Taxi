@@ -2,10 +2,12 @@ package com.example.bibeetaxi;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,6 +30,7 @@ import java.util.Map;
 
 public class ChatListFragment extends Fragment {
 
+    private static final String TAG = "ChatListFragment";
     private RecyclerView recyclerChatList;
     private ChatListAdapter adapter;
     private List<ChatInfo> chatList = new ArrayList<>();
@@ -51,13 +54,35 @@ public class ChatListFragment extends Fragment {
 
         loadChats();
 
-        adapter.setOnItemClickListener((otherUserId) -> {
+        adapter.setOnItemClickListener((otherUserId, chatId) -> {
+            Log.d(TAG, "Нажатие на чат: chatId=" + chatId + ", otherUserId=" + otherUserId);
+            openChatWithRideId(otherUserId, chatId);
+        });
+
+        return view;
+    }
+
+    private void openChatWithRideId(String otherUserId, String chatId) {
+        DatabaseReference infoRef = FirebaseDatabase.getInstance()
+                .getReference("chats").child(chatId).child("info");
+        infoRef.get().addOnSuccessListener(snapshot -> {
+            String rideId = null;
+            if (snapshot.exists()) {
+                rideId = snapshot.child("rideId").getValue(String.class);
+                Log.d(TAG, "rideId из info: " + rideId);
+            }
+            Intent intent = new Intent(getActivity(), ChatActivity.class);
+            intent.putExtra("otherUserId", otherUserId);
+            if (rideId != null) {
+                intent.putExtra("rideId", rideId);
+            }
+            startActivity(intent);
+        }).addOnFailureListener(e -> {
+            Log.e(TAG, "Ошибка загрузки info: " + e.getMessage());
             Intent intent = new Intent(getActivity(), ChatActivity.class);
             intent.putExtra("otherUserId", otherUserId);
             startActivity(intent);
         });
-
-        return view;
     }
 
     private void loadChats() {
@@ -72,6 +97,7 @@ public class ChatListFragment extends Fragment {
                         if (otherUserId.equals(currentUserId)) continue;
                         ChatInfo info = new ChatInfo();
                         info.otherUserId = otherUserId;
+                        info.chatId = chatId;
                         info.displayName = "Загрузка...";
                         chatList.add(info);
                         loadUserName(info);
@@ -81,8 +107,7 @@ public class ChatListFragment extends Fragment {
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-            }
+            public void onCancelled(@NonNull DatabaseError error) {}
         });
     }
 
@@ -92,7 +117,6 @@ public class ChatListFragment extends Fragment {
             adapter.notifyDataSetChanged();
             return;
         }
-
         firestore.collection("users").document(info.otherUserId).get()
                 .addOnSuccessListener(doc -> {
                     String name = doc.getString("name");
@@ -107,16 +131,16 @@ public class ChatListFragment extends Fragment {
 
     static class ChatInfo {
         String otherUserId;
+        String chatId;
         String displayName;
     }
 
     static class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ViewHolder> {
-
         private List<ChatInfo> list;
         private OnItemClickListener listener;
 
         interface OnItemClickListener {
-            void onItemClick(String otherUserId);
+            void onItemClick(String otherUserId, String chatId);
         }
 
         ChatListAdapter(List<ChatInfo> list) {
@@ -140,15 +164,13 @@ public class ChatListFragment extends Fragment {
             holder.textView.setText(info.displayName);
             holder.itemView.setOnClickListener(v -> {
                 if (listener != null) {
-                    listener.onItemClick(info.otherUserId);
+                    listener.onItemClick(info.otherUserId, info.chatId);
                 }
             });
         }
 
         @Override
-        public int getItemCount() {
-            return list.size();
-        }
+        public int getItemCount() { return list.size(); }
 
         class ViewHolder extends RecyclerView.ViewHolder {
             TextView textView;

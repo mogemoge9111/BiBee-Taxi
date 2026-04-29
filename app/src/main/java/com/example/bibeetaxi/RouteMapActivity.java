@@ -60,7 +60,6 @@ public class RouteMapActivity extends AppCompatActivity {
         List<Point> points = new ArrayList<>();
         points.add(start);
         points.add(end);
-
         Polyline polyline = new Polyline(points);
         PolylineMapObject polylineMapObject = mapObjects.addPolyline(polyline);
         polylineMapObject.setStrokeColor(Color.BLUE);
@@ -87,7 +86,6 @@ public class RouteMapActivity extends AppCompatActivity {
                     accepted.put("timestamp", System.currentTimeMillis());
                     db.collection("accepted_rides").add(accepted);
 
-                    // Создаём чат с rideId
                     createChat(driverId, passengerId, rideId);
                     Toast.makeText(this, "Заказ принят. Ожидайте подтверждения пассажира.", Toast.LENGTH_SHORT).show();
                     finish();
@@ -102,7 +100,7 @@ public class RouteMapActivity extends AppCompatActivity {
         Map<String, Object> info = new HashMap<>();
         info.put("driverId", driverId);
         info.put("passengerId", passengerId);
-        info.put("rideId", rideId);
+        info.put("rideId", rideId);          // <-- вот это было пропущено
         chatRef.setValue(info);
     }
 

@@ -4,9 +4,11 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,11 +25,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.SetOptions;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,6 +39,7 @@ import java.util.Map;
 
 public class ChatActivity extends AppCompatActivity {
 
+    private static final String TAG = "ChatActivity";
     private RecyclerView recyclerChat;
     private EditText editMessage;
     private Button buttonSend;
@@ -79,6 +80,8 @@ public class ChatActivity extends AppCompatActivity {
         otherUserId = getIntent().getStringExtra("otherUserId");
         rideId = getIntent().getStringExtra("rideId");
 
+        Log.d(TAG, "onCreate: otherUserId=" + otherUserId + ", rideId=" + rideId);
+
         if (otherUserId == null) { finish(); return; }
 
         if (currentUserId.compareTo(otherUserId) < 0) {
@@ -86,14 +89,9 @@ public class ChatActivity extends AppCompatActivity {
         } else {
             chatRoomId = otherUserId + "_" + currentUserId;
         }
+        Log.d(TAG, "chatRoomId=" + chatRoomId);
 
         db = FirebaseFirestore.getInstance();
-        if (rideId == null) {
-            loadRideIdFromChatInfo();
-        } else {
-            startRideListener();
-        }
-
         chatRef = FirebaseDatabase.getInstance().getReference("chats")
                 .child(chatRoomId).child("messages");
 
@@ -103,6 +101,14 @@ public class ChatActivity extends AppCompatActivity {
 
         loadOtherUserName();
         loadMessages();
+
+        if (rideId != null) {
+            Log.d(TAG, "rideId передан, запускаем слушатель");
+            startRideListener();
+        } else {
+            Log.d(TAG, "rideId не передан, ищем активную поездку");
+            findRideId();
+        }
 
         buttonSend.setOnClickListener(v -> {
             String text = editMessage.getText().toString().trim();
@@ -125,27 +131,58 @@ public class ChatActivity extends AppCompatActivity {
         btnCompleteRide.setOnClickListener(v -> updateRideStatus("completed"));
     }
 
-    private void loadRideIdFromChatInfo() {
-        DatabaseReference infoRef = FirebaseDatabase.getInstance()
-                .getReference("chats").child(chatRoomId).child("info");
-        infoRef.get().addOnSuccessListener(snapshot -> {
-            if (snapshot.exists()) {
-                rideId = snapshot.child("rideId").getValue(String.class);
-                if (rideId != null) {
-                    startRideListener();
-                }
-            }
-        });
+    private void findRideId() {
+        // Ищем, где currentUserId водитель, otherUserId пассажир
+        db.collection("ride_requests")
+                .whereEqualTo("driverId", currentUserId)
+                .whereEqualTo("passengerId", otherUserId)
+                .whereNotEqualTo("status", "completed")
+                .limit(1)
+                .get()
+                .addOnSuccessListener(snapshots -> {
+                    if (!snapshots.isEmpty()) {
+                        rideId = snapshots.getDocuments().get(0).getId();
+                        Log.d(TAG, "Найден rideId: " + rideId);
+                        startRideListener();
+                        return;
+                    }
+                    // Попробуем наоборот: currentUserId пассажир, otherUserId водитель
+                    db.collection("ride_requests")
+                            .whereEqualTo("passengerId", currentUserId)
+                            .whereEqualTo("driverId", otherUserId)
+                            .whereNotEqualTo("status", "completed")
+                            .limit(1)
+                            .get()
+                            .addOnSuccessListener(snapshots2 -> {
+                                if (!snapshots2.isEmpty()) {
+                                    rideId = snapshots2.getDocuments().get(0).getId();
+                                    Log.d(TAG, "Найден rideId (обратный): " + rideId);
+                                    startRideListener();
+                                } else {
+                                    Log.w(TAG, "Активная поездка не найдена");
+                                    Toast.makeText(ChatActivity.this, "Не удалось найти активную поездку", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                });
     }
 
     private void startRideListener() {
         if (rideId == null) return;
+        Log.d(TAG, "Запуск слушателя для rideId=" + rideId);
         rideListener = db.collection("ride_requests").document(rideId)
                 .addSnapshotListener((snapshot, e) -> {
-                    if (e != null || snapshot == null || !snapshot.exists()) return;
+                    if (e != null) {
+                        Log.e(TAG, "Ошибка слушателя: " + e.getMessage());
+                        return;
+                    }
+                    if (snapshot == null || !snapshot.exists()) {
+                        Log.w(TAG, "Документ не существует");
+                        return;
+                    }
                     currentStatus = snapshot.getString("status");
                     driverId = snapshot.getString("driverId");
                     passengerId = snapshot.getString("passengerId");
+                    Log.d(TAG, "Обновление: status=" + currentStatus + ", driver=" + driverId + ", passenger=" + passengerId);
                     updateButtons();
 
                     if ("completed".equals(currentStatus)) {
@@ -155,27 +192,41 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void updateButtons() {
-        if (currentStatus == null) return;
+        Log.d(TAG, "Обновление кнопок. currentStatus=" + currentStatus + ", currentUserId=" + currentUserId + ", driverId=" + driverId);
+        if (currentStatus == null) {
+            hideAllButtons();
+            return;
+        }
         boolean isDriver = currentUserId.equals(driverId);
+        hideAllButtons();
 
+        // Добавляем confirmed как аналог accepted
+        if (isDriver && ("accepted".equals(currentStatus) || "confirmed".equals(currentStatus))) {
+            btnDriverArrived.setVisibility(View.VISIBLE);
+            Log.d(TAG, "Показана кнопка 'Я на месте'");
+        } else if (isDriver && "driver_arrived".equals(currentStatus)) {
+            btnPickupPassenger.setVisibility(View.VISIBLE);
+            Log.d(TAG, "Показана кнопка 'Принял пассажира'");
+        } else if ("passenger_picked".equals(currentStatus) || "confirmed".equals(currentStatus) && !isDriver) {
+            // Для пассажира или водителя после passenger_picked показываем завершение
+            btnCompleteRide.setVisibility(View.VISIBLE);
+            Log.d(TAG, "Показана кнопка 'Завершить поездку'");
+        }
+        // Если статус driver_arrived, пассажир ничего не видит
+        if ("driver_arrived".equals(currentStatus) && !isDriver) {
+            // Можно показать уведомление, но кнопок нет
+        }
+        // После passenger_picked кнопка "Завершить" видна обоим
+        if ("passenger_picked".equals(currentStatus)) {
+            btnCompleteRide.setVisibility(View.VISIBLE);
+        }
+        // Если статус completed, кнопки не нужны
+    }
+
+    private void hideAllButtons() {
         btnDriverArrived.setVisibility(View.GONE);
         btnPickupPassenger.setVisibility(View.GONE);
         btnCompleteRide.setVisibility(View.GONE);
-
-        switch (currentStatus) {
-            case "accepted":
-                if (isDriver) btnDriverArrived.setVisibility(View.VISIBLE);
-                break;
-            case "driver_arrived":
-                if (isDriver) btnPickupPassenger.setVisibility(View.VISIBLE);
-                break;
-            case "passenger_picked":
-
-                btnCompleteRide.setVisibility(View.VISIBLE);
-                break;
-            case "waiting":
-                break;
-        }
     }
 
     private void updateRideStatus(String newStatus) {
@@ -183,10 +234,8 @@ public class ChatActivity extends AppCompatActivity {
         db.collection("ride_requests").document(rideId)
                 .update("status", newStatus)
                 .addOnSuccessListener(aVoid -> {
-
                     currentStatus = newStatus;
                     updateButtons();
-
                     notifyOtherUser(newStatus);
                 })
                 .addOnFailureListener(e -> Toast.makeText(this, "Ошибка обновления", Toast.LENGTH_SHORT).show());
@@ -206,14 +255,12 @@ public class ChatActivity extends AppCompatActivity {
                 break;
         }
 
-
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, MapApplication.CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setContentTitle(title)
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);
-
 
         Intent intent = new Intent(this, ChatActivity.class);
         intent.putExtra("otherUserId", otherUid);
@@ -227,7 +274,6 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void checkAndShowRating() {
-
         db.collection("reviews")
                 .whereEqualTo("rideId", rideId)
                 .whereEqualTo("reviewerId", currentUserId)
@@ -241,7 +287,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void showRatingDialog() {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_rating, null);
-        android.widget.RatingBar ratingBar = dialogView.findViewById(R.id.ratingBar);
+        RatingBar ratingBar = dialogView.findViewById(R.id.ratingBar);
         EditText etComment = dialogView.findViewById(R.id.tvComment);
 
         new AlertDialog.Builder(this)

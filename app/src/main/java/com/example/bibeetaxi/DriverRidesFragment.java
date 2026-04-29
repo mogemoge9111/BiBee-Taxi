@@ -14,15 +14,11 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class DriverRidesFragment extends Fragment {
 
@@ -31,10 +27,7 @@ public class DriverRidesFragment extends Fragment {
     private List<String> rideDisplayList;
     private List<String> rideIdList;
     private List<String> passengerIdList;
-    private List<Double> fromLatList;
-    private List<Double> fromLonList;
-    private List<Double> toLatList;
-    private List<Double> toLonList;
+    private List<Double> fromLatList, fromLonList, toLatList, toLonList;
     private FirebaseFirestore db;
     private String driverId;
 
@@ -115,20 +108,10 @@ public class DriverRidesFragment extends Fragment {
                         toLonList.add(toLon);
                     }
                     adapter.notifyDataSetChanged();
-                    if (rideDisplayList.isEmpty()) {
+                    // Исправление: Toast только если есть контекст
+                    if (rideDisplayList.isEmpty() && isAdded()) {
                         Toast.makeText(getContext(), "Нет доступных заказов", Toast.LENGTH_SHORT).show();
                     }
                 });
-    }
-
-    private void createChat(String driverId, String passengerId, String rideId) {
-        if (driverId.equals(passengerId)) return;
-        String chatId = driverId.compareTo(passengerId) < 0 ? driverId + "_" + passengerId : passengerId + "_" + driverId;
-        DatabaseReference chatRef = FirebaseDatabase.getInstance().getReference("chats").child(chatId).child("info");
-        Map<String, Object> info = new HashMap<>();
-        info.put("driverId", driverId);
-        info.put("passengerId", passengerId);
-        info.put("rideId", rideId);
-        chatRef.setValue(info);
     }
 }
