@@ -4,6 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="@drawable/chat"
+    android:paddingTop="50dp"
     android:padding="24dp"
     android:gravity="center">
 

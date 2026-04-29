@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/chat"
-    android:paddingTop="24dp">
+    android:paddingTop="50dp">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_rides"

@@ -84,7 +84,7 @@ public class RidesFragment extends Fragment {
                 }
                 break;
             case "in_progress":
-                // В работе – ничего не делаем
+
                 break;
             case "rejected":
                 showResumeDialog(item);
@@ -198,6 +198,7 @@ public class RidesFragment extends Fragment {
                 holder.btnChat.setOnClickListener(v -> {
                     Intent intent = new Intent(getActivity(), ChatActivity.class);
                     intent.putExtra("otherUserId", item.driverId);
+                    intent.putExtra("rideId", item.rideId);
                     startActivity(intent);
                 });
             } else {
@@ -232,10 +233,10 @@ public class RidesFragment extends Fragment {
 
         private String getStatusText(String status) {
             switch (status) {
-                case "waiting": return "Ожидает";
-                case "accepted": return "Принят";
-                case "in_progress": return "В работе";
-                case "rejected": return "Отклонён";
+                case "waiting": return "Поиск водителя";
+                case "accepted": return "Водитель назначен";
+                case "in_progress": return "В пути";
+                case "rejected": return "Отменён";
                 case "completed": return "Завершён";
                 default: return status;
             }

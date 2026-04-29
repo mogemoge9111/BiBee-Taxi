@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -32,6 +31,10 @@ public class DriverRidesFragment extends Fragment {
     private List<String> rideDisplayList;
     private List<String> rideIdList;
     private List<String> passengerIdList;
+    private List<Double> fromLatList;
+    private List<Double> fromLonList;
+    private List<Double> toLatList;
+    private List<Double> toLonList;
     private FirebaseFirestore db;
     private String driverId;
 
@@ -40,9 +43,15 @@ public class DriverRidesFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_driver_rides, container, false);
         lvRides = view.findViewById(R.id.lvRides);
+
         rideDisplayList = new ArrayList<>();
         rideIdList = new ArrayList<>();
         passengerIdList = new ArrayList<>();
+        fromLatList = new ArrayList<>();
+        fromLonList = new ArrayList<>();
+        toLatList = new ArrayList<>();
+        toLonList = new ArrayList<>();
+
         adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, rideDisplayList);
         lvRides.setAdapter(adapter);
         db = FirebaseFirestore.getInstance();
@@ -53,7 +62,19 @@ public class DriverRidesFragment extends Fragment {
         lvRides.setOnItemClickListener((parent, view1, position, id) -> {
             String rideId = rideIdList.get(position);
             String passengerId = passengerIdList.get(position);
-            acceptRide(rideId, passengerId);
+            double fromLat = fromLatList.get(position);
+            double fromLon = fromLonList.get(position);
+            double toLat = toLatList.get(position);
+            double toLon = toLonList.get(position);
+
+            Intent intent = new Intent(getActivity(), RouteMapActivity.class);
+            intent.putExtra("rideId", rideId);
+            intent.putExtra("passengerId", passengerId);
+            intent.putExtra("fromLat", fromLat);
+            intent.putExtra("fromLon", fromLon);
+            intent.putExtra("toLat", toLat);
+            intent.putExtra("toLon", toLon);
+            startActivity(intent);
         });
 
         return view;
@@ -67,51 +88,47 @@ public class DriverRidesFragment extends Fragment {
                     rideDisplayList.clear();
                     rideIdList.clear();
                     passengerIdList.clear();
+                    fromLatList.clear();
+                    fromLonList.clear();
+                    toLatList.clear();
+                    toLonList.clear();
+
                     for (QueryDocumentSnapshot doc : value) {
                         String from = doc.getString("fromAddress");
                         String to = doc.getString("toAddress");
                         String city = doc.getString("city");
                         int maxPrice = doc.getLong("maxPrice") != null ? doc.getLong("maxPrice").intValue() : 0;
                         String passengerId = doc.getString("passengerId");
+
+                        double fromLat = doc.getDouble("fromLat") != null ? doc.getDouble("fromLat") : 0;
+                        double fromLon = doc.getDouble("fromLon") != null ? doc.getDouble("fromLon") : 0;
+                        double toLat = doc.getDouble("toLat") != null ? doc.getDouble("toLat") : 0;
+                        double toLon = doc.getDouble("toLon") != null ? doc.getDouble("toLon") : 0;
+
                         String display = city + ": " + from + " → " + to + " (до " + maxPrice + "₽)";
                         rideDisplayList.add(display);
                         rideIdList.add(doc.getId());
                         passengerIdList.add(passengerId);
+                        fromLatList.add(fromLat);
+                        fromLonList.add(fromLon);
+                        toLatList.add(toLat);
+                        toLonList.add(toLon);
                     }
                     adapter.notifyDataSetChanged();
                     if (rideDisplayList.isEmpty()) {
                         Toast.makeText(getContext(), "Нет доступных заказов", Toast.LENGTH_SHORT).show();
-
                     }
                 });
     }
 
-    private void acceptRide(String rideId, String passengerId) {
-        db.collection("ride_requests").document(rideId)
-                .update("status", "accepted", "driverId", driverId)
-                .addOnSuccessListener(aVoid -> {
-                    Map<String, Object> accepted = new HashMap<>();
-                    accepted.put("rideId", rideId);
-                    accepted.put("driverId", driverId);
-                    accepted.put("passengerId", passengerId);
-                    accepted.put("status", "accepted");
-                    accepted.put("timestamp", System.currentTimeMillis());
-
-                    db.collection("accepted_rides").add(accepted);
-                    createChat(driverId, passengerId);
-                    Toast.makeText(getContext(), "Заказ принят. Ожидайте подтверждения пассажира.", Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    private void createChat(String driverId, String passengerId) {
-        if (driverId.equals(passengerId)) {
-            return;
-        }
+    private void createChat(String driverId, String passengerId, String rideId) {
+        if (driverId.equals(passengerId)) return;
         String chatId = driverId.compareTo(passengerId) < 0 ? driverId + "_" + passengerId : passengerId + "_" + driverId;
         DatabaseReference chatRef = FirebaseDatabase.getInstance().getReference("chats").child(chatId).child("info");
-        Map<String, String> info = new HashMap<>();
+        Map<String, Object> info = new HashMap<>();
         info.put("driverId", driverId);
         info.put("passengerId", passengerId);
+        info.put("rideId", rideId);
         chatRef.setValue(info);
     }
 }

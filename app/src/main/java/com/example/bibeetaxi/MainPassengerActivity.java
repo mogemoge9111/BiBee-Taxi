@@ -28,12 +28,10 @@ public class MainPassengerActivity extends AppCompatActivity {
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnItemSelectedListener(navListener);
 
-        // Сначала показываем карту (она загрузится с задержкой внутри MapFragment)
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, new MapFragment())
                 .commit();
 
-        // Слушаем подтверждения
         listenForAcceptedRides();
     }
 

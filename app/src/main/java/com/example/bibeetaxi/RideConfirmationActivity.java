@@ -81,14 +81,12 @@ public class RideConfirmationActivity extends AppCompatActivity {
     }
 
     private void confirmRide() {
-        // Меняем статус accepted_rides и ride_requests на confirmed
         Map<String, Object> updates = new HashMap<>();
         updates.put("status", "confirmed");
 
         db.collection("accepted_rides").document(acceptedRideId).update(updates);
         db.collection("ride_requests").document(rideId).update("status", "confirmed");
 
-        // Открываем чат
         String chatId = driverId.compareTo(passengerId) < 0 ? driverId + "_" + passengerId : passengerId + "_" + driverId;
         Intent intent = new Intent(this, ChatActivity.class);
         intent.putExtra("otherUserId", driverId);

@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/chat"
+    android:background="@drawable/chat_vert"
+    android:paddingTop="50dp"
     android:fitsSystemWindows="true">
 
     <LinearLayout
@@ -34,6 +35,45 @@
             android:clickable="true"
             android:focusable="true"
             android:background="?android:attr/selectableItemBackground" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ride_controls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:visibility="visible">
+
+        <Button android:id="@+id/btn_driver_arrived"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="#FFC107"
+            android:textColor="#000000"
+            android:textStyle="bold"
+            android:text="Я на месте"
+            android:visibility="gone" />
+
+        <Button android:id="@+id/btn_pickup_passenger"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="#FFC107"
+            android:textColor="#000000"
+            android:textStyle="bold"
+            android:text="Принял пассажира"
+            android:visibility="gone" />
+
+        <Button android:id="@+id/btn_complete_ride"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="#FFC107"
+            android:textColor="#000000"
+            android:textStyle="bold"
+            android:text="Завершить поездку"
+            android:visibility="gone" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

@@ -7,6 +7,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -14,7 +15,8 @@ import java.util.Map;
 
 public class EditRideRequestActivity extends AppCompatActivity {
 
-    private EditText etFromAddress, etToAddress, etCity, etMaxPrice, etPassengers, etCargo;
+    private TextInputLayout tilFrom, tilTo, tilCity, tilMaxPrice, tilPassengers, tilCargo;
+    private EditText etFrom, etTo, etCity, etMaxPrice, etPassengers, etCargo;
     private Button btnSaveChanges;
     private FirebaseFirestore db;
     private String rideId;
@@ -22,17 +24,28 @@ public class EditRideRequestActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Используем ту же разметку, что и для создания заказа
         setContentView(R.layout.activity_create_ride_request);
 
-        etFromAddress = findViewById(R.id.etFromAddress);
-        etToAddress = findViewById(R.id.etToAddress);
-        etCity = findViewById(R.id.etCity);
-        etMaxPrice = findViewById(R.id.etMaxPrice);
-        etPassengers = findViewById(R.id.etPassengers);
-        etCargo = findViewById(R.id.etCargo);
+        tilFrom = findViewById(R.id.tilFrom);
+        tilTo = findViewById(R.id.tilTo);
+        tilCity = findViewById(R.id.tilCity);
+        tilMaxPrice = findViewById(R.id.tilMaxPrice);
+        tilPassengers = findViewById(R.id.tilPassengers);
+        tilCargo = findViewById(R.id.tilCargo);
+
+        etFrom = tilFrom.getEditText();
+        etTo = tilTo.getEditText();
+        etCity = tilCity.getEditText();
+        etMaxPrice = tilMaxPrice.getEditText();
+        etPassengers = tilPassengers.getEditText();
+        etCargo = tilCargo.getEditText();
+
         btnSaveChanges = findViewById(R.id.btnSubmitRequest);
         btnSaveChanges.setText("Сохранить изменения");
+
+        // Скрываем кнопки проверки адресов, они не нужны при редактировании
+        findViewById(R.id.btnCheckFrom).setVisibility(Button.GONE);
+        findViewById(R.id.btnCheckTo).setVisibility(Button.GONE);
 
         db = FirebaseFirestore.getInstance();
         rideId = getIntent().getStringExtra("rideId");
@@ -52,8 +65,8 @@ public class EditRideRequestActivity extends AppCompatActivity {
         db.collection("ride_requests").document(rideId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        etFromAddress.setText(documentSnapshot.getString("fromAddress"));
-                        etToAddress.setText(documentSnapshot.getString("toAddress"));
+                        etFrom.setText(documentSnapshot.getString("fromAddress"));
+                        etTo.setText(documentSnapshot.getString("toAddress"));
                         etCity.setText(documentSnapshot.getString("city"));
                         Long maxPrice = documentSnapshot.getLong("maxPrice");
                         if (maxPrice != null) {
@@ -73,8 +86,8 @@ public class EditRideRequestActivity extends AppCompatActivity {
     }
 
     private void saveChanges() {
-        String from = etFromAddress.getText().toString().trim();
-        String to = etToAddress.getText().toString().trim();
+        String from = etFrom.getText().toString().trim();
+        String to = etTo.getText().toString().trim();
         String city = etCity.getText().toString().trim();
         String maxPriceStr = etMaxPrice.getText().toString().trim();
         String passengers = etPassengers.getText().toString().trim();
@@ -93,7 +106,6 @@ public class EditRideRequestActivity extends AppCompatActivity {
             return;
         }
 
-        // Шутка при большой стоимости
         if (maxPrice > 100000) {
             Toast.makeText(this, "Ого, да вы богач! 🤑 Может, купите нам по кофе?", Toast.LENGTH_LONG).show();
         }
@@ -105,7 +117,6 @@ public class EditRideRequestActivity extends AppCompatActivity {
         updates.put("maxPrice", maxPrice);
         updates.put("passengers", passengers);
         updates.put("cargo", cargo);
-        // Статус заказа не меняем
 
         db.collection("ride_requests").document(rideId).update(updates)
                 .addOnSuccessListener(aVoid -> {
