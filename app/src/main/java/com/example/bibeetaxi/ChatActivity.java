@@ -146,7 +146,7 @@ public class ChatActivity extends AppCompatActivity {
                         startRideListener();
                         return;
                     }
-                    // Попробуем наоборот: currentUserId пассажир, otherUserId водитель
+
                     db.collection("ride_requests")
                             .whereEqualTo("passengerId", currentUserId)
                             .whereEqualTo("driverId", otherUserId)
@@ -200,7 +200,7 @@ public class ChatActivity extends AppCompatActivity {
         boolean isDriver = currentUserId.equals(driverId);
         hideAllButtons();
 
-        // Добавляем confirmed как аналог accepted
+
         if (isDriver && ("accepted".equals(currentStatus) || "confirmed".equals(currentStatus))) {
             btnDriverArrived.setVisibility(View.VISIBLE);
             Log.d(TAG, "Показана кнопка 'Я на месте'");
@@ -208,19 +208,19 @@ public class ChatActivity extends AppCompatActivity {
             btnPickupPassenger.setVisibility(View.VISIBLE);
             Log.d(TAG, "Показана кнопка 'Принял пассажира'");
         } else if ("passenger_picked".equals(currentStatus) || "confirmed".equals(currentStatus) && !isDriver) {
-            // Для пассажира или водителя после passenger_picked показываем завершение
+
             btnCompleteRide.setVisibility(View.VISIBLE);
             Log.d(TAG, "Показана кнопка 'Завершить поездку'");
         }
-        // Если статус driver_arrived, пассажир ничего не видит
+
         if ("driver_arrived".equals(currentStatus) && !isDriver) {
-            // Можно показать уведомление, но кнопок нет
+
         }
-        // После passenger_picked кнопка "Завершить" видна обоим
+
         if ("passenger_picked".equals(currentStatus)) {
             btnCompleteRide.setVisibility(View.VISIBLE);
         }
-        // Если статус completed, кнопки не нужны
+
     }
 
     private void hideAllButtons() {

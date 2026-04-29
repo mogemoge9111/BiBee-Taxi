@@ -28,6 +28,9 @@ public class DriverRidesFragment extends Fragment {
     private List<String> rideIdList;
     private List<String> passengerIdList;
     private List<Double> fromLatList, fromLonList, toLatList, toLonList;
+    private List<String> fromAddressList, toAddressList;
+    private List<String> passengersList, cargoList;
+    private List<Integer> maxPriceList;
     private FirebaseFirestore db;
     private String driverId;
 
@@ -44,6 +47,11 @@ public class DriverRidesFragment extends Fragment {
         fromLonList = new ArrayList<>();
         toLatList = new ArrayList<>();
         toLonList = new ArrayList<>();
+        fromAddressList = new ArrayList<>();
+        toAddressList = new ArrayList<>();
+        passengersList = new ArrayList<>();
+        cargoList = new ArrayList<>();
+        maxPriceList = new ArrayList<>();
 
         adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, rideDisplayList);
         lvRides.setAdapter(adapter);
@@ -59,6 +67,11 @@ public class DriverRidesFragment extends Fragment {
             double fromLon = fromLonList.get(position);
             double toLat = toLatList.get(position);
             double toLon = toLonList.get(position);
+            String fromAddress = fromAddressList.get(position);
+            String toAddress = toAddressList.get(position);
+            String passengers = passengersList != null && !passengersList.isEmpty() ? passengersList.get(position) : "1";
+            String cargo = cargoList != null && !cargoList.isEmpty() ? cargoList.get(position) : "";
+            int maxPrice = maxPriceList.get(position);
 
             Intent intent = new Intent(getActivity(), RouteMapActivity.class);
             intent.putExtra("rideId", rideId);
@@ -67,6 +80,11 @@ public class DriverRidesFragment extends Fragment {
             intent.putExtra("fromLon", fromLon);
             intent.putExtra("toLat", toLat);
             intent.putExtra("toLon", toLon);
+            intent.putExtra("fromAddress", fromAddress);
+            intent.putExtra("toAddress", toAddress);
+            intent.putExtra("passengers", passengers);
+            intent.putExtra("cargo", cargo);
+            intent.putExtra("maxPrice", maxPrice);
             startActivity(intent);
         });
 
@@ -81,10 +99,11 @@ public class DriverRidesFragment extends Fragment {
                     rideDisplayList.clear();
                     rideIdList.clear();
                     passengerIdList.clear();
-                    fromLatList.clear();
-                    fromLonList.clear();
-                    toLatList.clear();
-                    toLonList.clear();
+                    fromLatList.clear(); fromLonList.clear();
+                    toLatList.clear(); toLonList.clear();
+                    fromAddressList.clear(); toAddressList.clear();
+                    passengersList.clear(); cargoList.clear();
+                    maxPriceList.clear();
 
                     for (QueryDocumentSnapshot doc : value) {
                         String from = doc.getString("fromAddress");
@@ -92,11 +111,12 @@ public class DriverRidesFragment extends Fragment {
                         String city = doc.getString("city");
                         int maxPrice = doc.getLong("maxPrice") != null ? doc.getLong("maxPrice").intValue() : 0;
                         String passengerId = doc.getString("passengerId");
-
                         double fromLat = doc.getDouble("fromLat") != null ? doc.getDouble("fromLat") : 0;
                         double fromLon = doc.getDouble("fromLon") != null ? doc.getDouble("fromLon") : 0;
                         double toLat = doc.getDouble("toLat") != null ? doc.getDouble("toLat") : 0;
                         double toLon = doc.getDouble("toLon") != null ? doc.getDouble("toLon") : 0;
+                        String passengers = doc.getString("passengers");
+                        String cargo = doc.getString("cargo");
 
                         String display = city + ": " + from + " → " + to + " (до " + maxPrice + "₽)";
                         rideDisplayList.add(display);
@@ -106,9 +126,13 @@ public class DriverRidesFragment extends Fragment {
                         fromLonList.add(fromLon);
                         toLatList.add(toLat);
                         toLonList.add(toLon);
+                        fromAddressList.add(from);
+                        toAddressList.add(to);
+                        passengersList.add(passengers);
+                        cargoList.add(cargo);
+                        maxPriceList.add(maxPrice);
                     }
                     adapter.notifyDataSetChanged();
-                    // Исправление: Toast только если есть контекст
                     if (rideDisplayList.isEmpty() && isAdded()) {
                         Toast.makeText(getContext(), "Нет доступных заказов", Toast.LENGTH_SHORT).show();
                     }

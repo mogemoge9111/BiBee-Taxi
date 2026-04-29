@@ -44,7 +44,7 @@ public class CreateRideRequestActivity extends AppCompatActivity implements Sess
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_ride_request);
 
-        // Кнопка закрытия
+
         findViewById(R.id.btnClose).setOnClickListener(v -> finish());
 
         tilFrom = findViewById(R.id.tilFrom);
