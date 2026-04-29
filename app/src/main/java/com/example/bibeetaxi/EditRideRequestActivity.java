@@ -43,7 +43,6 @@ public class EditRideRequestActivity extends AppCompatActivity {
         btnSaveChanges = findViewById(R.id.btnSubmitRequest);
         btnSaveChanges.setText("Сохранить изменения");
 
-        // Скрываем кнопки проверки адресов, они не нужны при редактировании
         findViewById(R.id.btnCheckFrom).setVisibility(Button.GONE);
         findViewById(R.id.btnCheckTo).setVisibility(Button.GONE);
 
